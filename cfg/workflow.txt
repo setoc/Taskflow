@@ -1,0 +1,81 @@
+#Task is a unit of work performed at one time in a context. Task transforms the context. Task returns the transformed context.
+#Context is property dictionary describing the environment that is passed to all the tasks and all the conditions.
+#Condition is a business rule that decides if a task can execute.
+
+workflow
+	name=dbupdate
+
+# the condition name is also the name of the function that is called within the class.
+# the function should accept a context ref and a task ref and return a boolean value
+# conditions must be defined before the tasks that use them
+
+condition
+	name=is_host_enabled
+	class=App::Custom::Cfgman
+	
+condition
+	name=is_model_current
+	class=App::Custom::Archive
+	
+condition
+	name=is_model_loaded
+	class=App::Custom::Archive
+
+task
+	name=backup_online_db
+	class=App::Custom::BackupDb
+	condition=is_host_enabled
+	next=get_model_archive
+
+task
+	name=get_model_archive
+	class=App::Custom::GetArchive
+	next=load_scadamdl_clone
+
+task
+	name=load_scadamdl_clone
+	class=App::Custom::LoadScadamdl
+	condition=is_model_current
+	next=compare_db;update_smp
+
+task
+	name=compare_db
+	class=App::Custom::CompareDb
+	next=update_smp;update_standby
+	
+task
+	name=update_smp
+	class=App::Custom::UpdateSmp
+	condition=is_model_current;is_model_loaded
+	next=update_smp;update_standby;rollback_smp
+	
+task
+	name=update_standby
+	class=App::Custom::UpdateStandby
+	condition=is_model_current;is_model_loaded
+	next=failover;rollback_host
+	
+task
+	name=failover
+	class=App::Custom::Failover
+	next=update_other_host;update_rds
+	
+task
+	name=update_other_host
+	class=App::Custom::UpdateStandby
+	next=update_rds;update_other_host
+	
+task
+	name=update_rds
+	class=App::Custom::UpdateRds
+	
+task
+	name=rollback_host
+	class=App::Custom::RollbackHost
+	next=rollback_host;rollback_smp
+	
+task
+	name=rollback_smp
+	class=App::Custom::RollbackFrontend
+	next=rollback_host;rollback_smp
+	
