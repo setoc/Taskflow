@@ -62,8 +62,41 @@ sub add{
 	}
 }
 
+sub add_params{
+	my ($self,$param) = @_;
+	# add param structure to $self - split on {}[]
+	# first word is the key in $self
+	#TODO: use a state machine to tokenize and parse the data structure
+	my ($key,$other) = split(/:/,$param,1);
+	$self->{context}->add($key,undef);
+	while(length($other)>0){
+		if($other->[0] eq '['){
+			$other =~ /(\[.*?\])/;
+			my $array = $1;
+			$self->{context}->modify($key,[]);
+		}elsif($other->[0] eq '{'){
+			$other =~ /({.*?})/;
+			my $hash = $1;
+		}
+	}
+}
+
+sub execute_task{
+	my $self = shift;
+	my $task_name = shift;
+	$self->{tasks}{$task_name}->execute($self->{context});
+}
+
+sub next_task{
+	my $self = shift;
+	# return the next task as defined in context or return all tasks
+	return $self->{context}{next_task} if (defined $self->{context}{next_task}); # arrayref
+	return $self->{task_names}; # arrayref
+}
+
 sub reset{
 	my $self = shift;
+	$self->{context}{next_task} = undef;
 }
 
 =item C<< $wf->add_task($state) >>
@@ -129,7 +162,10 @@ sub condition_names {
 	my $self = shift;
 	return $self->{condition_names};
 }
-
+sub context {
+	my $self = shift;
+	return $self->{context};
+}
 =back
 
 =head1 CAVEATS

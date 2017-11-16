@@ -66,6 +66,11 @@ sub _process_lines{
 			foreach my $v (@val){
 				$current_obj->add_next($v);
 			}
+		}elsif($line=~/^\sparams/){
+			my $key,@val) = split(/[=;]/,$line);
+			foreach my $v (@val){
+				$current_obj->add_params($v);
+			}
 		}elsif($line=~// or $line=~/^\s*$/){
 			#ignore blank line
 		}else{

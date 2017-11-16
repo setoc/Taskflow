@@ -4,6 +4,9 @@
 
 workflow
 	name=dbupdate
+	params=opco
+	params=hosts[]
+	params=smps{name,comm,servers[]}
 
 # the condition name is also the name of the function that is called within the class.
 # the function should accept a context ref and a task ref and return a boolean value
