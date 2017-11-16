@@ -1,46 +1,50 @@
 <taskmaster>
-<!--  <params> -->
     <param name="OPCO" value="TCC" />
-<!--  </params> -->
-<!--  <tasks> -->
+    
     <task name="backup_online_db">
       <next name="get_model_archive">
       </next>
     </task>
+    
     <task name="get_model_archive">
       <next name="load_scadamdl_clone">
-        <condition name="is_archive_current"/>
+        <condition name="is_archive_current" module="App::Custom::Conditions"/>
       </next>
     </task>
+    
     <task name="load_scadamdl_clone">
       <next name="compare_db">
-        <condition name="is_archive_current"/>
-        <condition name="is_the_answer_42"/>
+        <condition name="is_archive_current" module="App::Custom::Conditions"/>
+        <condition name="is_the_answer_42" module="App::Custom::Conditions"/>
       </next>
       <next name="update_smp">
-        <condition name="is_archive_current"/>
+        <condition name="is_archive_current" module="App::Custom::Conditions"/>
       </next>
     </task>
+    
     <task name="compare_db">
       <next name="update_smp"/>
     </task>
+    
     <task name="update_smp">
       <param name="SMP" value="TNFEABI" />
       <param name="COMMS" value="COMMSTNC" />
     </task>
+    
     <task name="update_smp">
       <param name="SMP" value="TNFESAN" />
       <param name="COMMS" value="COMMSSAN" />
     </task>
+    
     <task name="update_smp">
       <param name="SMP" value="TCFELAR" />
       <param name="COMMS" value="COMMLAR" />
     </task>
+    
     <task name="update_standby"></task>
     <task name="failover"></task>
     <task name="update_other_host"></task>
     <task name="update_rds"></task>
     <task name="rollback_host"></task>
     <task name="rollback_smp"></task>
-<!--  </tasks> -->
 </taskmaster>

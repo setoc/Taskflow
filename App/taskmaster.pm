@@ -9,6 +9,8 @@ use XML::Simple qw(:strict);
 use Log::Log4perl qw(get_logger);
 use Data::Dumper;
 
+use App::Task;
+
 =head1 NAME
 
 TaskMaster - shell and perl batcher
@@ -57,23 +59,37 @@ sub _load_taskmaster_config{
 
 	#CREATE TASK OBJECTS FOR EACH TASK
 	foreach my $item (@{$config->{task}}){
-        
-		push @{$self->{tasks}} , $item;
+		push @{$self->{tasks}} , _create_task_ref($item);
 	}
     foreach my $item(@{$config->{param}}){
         $self->{params}{$item->{name}} = $item->{value};
     }
     print Dumper($self->{params});
 }
+sub _create_task_ref{
+	my $item = shift;
+	my $task = {};
+	$task->{name} = $item->{name};
+	foreach my $next_item(@{$item->{next}}){
+		my $next = {};
+		$next->{name} = $next_item->{name};
+		foreach my $condition_item(@{$next_item->{conditions}}){
+			$next->{conditions}{$condition_item->{name}} = $condition_item->{module};
+		}
+		push @{$task->{next_tasks}} , $next;
+	}
+	return $task;
+}
+
 sub _load_task_config{
 	my $self = shift;
 	my $xml = shift;
-	my $config = XMLin($xml, KeyAttr=>{},ForceArray=>['step','param','task']);
+	my $config = XMLin($xml, KeyAttr=>{},ForceArray=>['cmd','param','task']);
 	#TODO: VALIDATE DATA
 
 	#CREATE TASK OBJECTS FOR EACH TASK
 	foreach my $item (@{$config->{task}}){
-		push @{$self->{tasks}} , Task->new($item);
+		push @{$self->{tasks}} , App::Task->new(%{$item});
 	}
 }
 

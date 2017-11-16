@@ -17,7 +17,7 @@ $log->info("Starting: ",scalar(localtime));
 process_options();
 
 my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',tasks_xml=>'cfg/tasks.xml');
-
+print Dumper($tm);
 exit(-1);
 
 while(1){
