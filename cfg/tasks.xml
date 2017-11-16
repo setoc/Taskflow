@@ -1,0 +1,23 @@
+<tasks>
+  <task name="backup_online_db">
+    <step description="create scada savecase">
+      <cmd type="system" run="hdbcopydata -s scada.ems -df %habitat_cases%\scada.ems.%OPCO%_%date%%time%" />
+    </step>
+    <step description="create tagging savecase">
+      <cmd type="perl" module="App::Savecase" sub="hdbcopydata">
+        <param name="-s" value="tagging.ems"/>
+        <param name="-df" value="%habitat_cases%\tagging.ems.%OPCO%_%date%%time%" />
+      </cmd>
+    </step>
+  </task>
+  <task name="get_model_archive">
+    <step description="copy archive from source">
+      <cmd type="system" run="copy %source%\%savecasedir%\%opco%_scada.zip %habitat_cases%\" />
+    </step>
+  </task>
+  <task name="load_scadamdl_clone">
+    <step description="copy archive from source">
+      <cmd type="system" run="hdbcopydata -case scadamdl.ade.%OPCO%_scada -d scadamdl.ems" />
+    </step>
+  </task>
+</tasks>

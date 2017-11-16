@@ -1,41 +1,28 @@
-use 5.016;
+#!perl
+use 5.010;
 use strict;
 use warnings;
 use Getopt::Long qw(GetOptions);
 use Log::Log4perl qw(get_logger);
 use Carp;
+
+use App::TaskMaster;
+
 use Data::Dumper;
 
-use App::Workflow::Config qw(load_workflow);
-
-my $LOG_FILE = 'dbupdate_workflow.log';
-if(-f $LOG_FILE){
-	my $mtime = (stat $LOG_FILE)[9];
-	if(time-$mtime>600){#10 minutes
-		unlink($LOG_FILE);
-	}
-}
-Log::Log4perl::init('log4perl.conf');
+configure_logger();
 my $log = get_logger();
-
 $log->info("Starting: ",scalar(localtime));
 
-my ($OPT_db_init, $OPT_db_type);
-GetOptions('db'=>\$OPT_db_init,
-		   'dbtype=s'=>\$OPT_db_type);
-$OPT_db_type||='sqlite';
-my $DB_FILE = 'dbupdate.db';
-if($OPT_db_init){
-	#TestDBUtil::create_tables({db_type=>$OPT_db_type,db_file=>$DB_FILE});
-	say "Created database and tables ok\n";
-	exit();
-}
+process_options();
 
-my $wf = load_workflow('cfg/workflow.txt');
+my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',tasks_xml=>'cfg/tasks.xml');
+
+exit(-1);
 
 while(1){
 	
-	my $tasks = $wf->next_task;
+	my $tasks = $tm->next_task;
 	my $i = 0;
 	foreach my $task_name (@{$tasks}){
 		++$i;
@@ -48,11 +35,37 @@ while(1){
 	next if ($full_response <1 || $full_response>$i);
 	my $task_name = $tasks->[$full_response-1];
 	say "\nselected $task_name\n" ;
-	if($wf->execute_task($task_name)){
+	if($tm->execute_task($task_name)){
 		say "$task_name executed successfully";
 	}else{
 		say "$task_name failed to execute";
 	}
+}
+
+
+sub process_options{
+    my ($OPT_db_init, $OPT_db_type);
+    GetOptions('db'=>\$OPT_db_init,
+               'dbtype=s'=>\$OPT_db_type);
+    $OPT_db_type||='sqlite';
+    my $DB_FILE = 'dbupdate.db';
+    if($OPT_db_init){
+        #TestDBUtil::create_tables({db_type=>$OPT_db_type,db_file=>$DB_FILE});
+        say "Created database and tables ok\n";
+        exit();
+    }
+}
+
+
+sub configure_logger{
+    my $LOG_FILE = 'dbupdate_workflow.log';
+    if(-f $LOG_FILE){
+        my $mtime = (stat $LOG_FILE)[9];
+        if(time-$mtime>600){#10 minutes
+            unlink($LOG_FILE);
+        }
+    }
+    Log::Log4perl::init('cfg/log4perl.conf');
 }
 
 # Generic routine to read a response from the command-line (defaults,
