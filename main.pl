@@ -17,12 +17,15 @@ $log->info("Starting: ",scalar(localtime));
 process_options();
 
 my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',tasks_xml=>'cfg/tasks.xml');
-print Dumper($tm);
+#print Dumper($tm);
+my $available_tasks = $tm->available_tasks();
+print Dumper($available_tasks);
+
 exit(-1);
 
 while(1){
 	
-	my $tasks = $tm->next_task;
+	my $tasks = $tm->available_tasks;
 	my $i = 0;
 	foreach my $task_name (@{$tasks}){
 		++$i;

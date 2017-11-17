@@ -1,30 +1,18 @@
 <taskmaster>
+    <!-- GLOBAL PARAMETERS AVAILABLE TO ALL TASKS -->
+    <!-- THE ENVIRONMENT VARIABLES OF THE EXECUTING MACHINE ARE AVAILABLE AS WELL -->
     <param name="OPCO" value="TCC" />
     
-    <task name="backup_online_db">
-      <next name="get_model_archive">
-      </next>
-    </task>
+    <!-- EACH TASK CAPTURES SITE SPECIFIC PARAMETERS FOR EXECUTION -->
+    <!-- TASKS THAT DON'T MEET THEIR CONDITIONS (IN TASKS.XML) SHOULD NOT BE VISIBLE -->
+    <!-- PARAMETERS ARE PASSED TO ALL TASKS AND CONDITIONS AS HASH FOR PROCESSING - SO THEY MUST MATCH WHAT THE SUB OR CMD EXPECT -->
+    <task name="backup_online_db"></task>
     
-    <task name="get_model_archive">
-      <next name="load_scadamdl_clone">
-        <condition name="is_archive_current" module="App::Custom::Conditions"/>
-      </next>
-    </task>
+    <task name="get_model_archive"></task>
     
-    <task name="load_scadamdl_clone">
-      <next name="compare_db">
-        <condition name="is_archive_current" module="App::Custom::Conditions"/>
-        <condition name="is_the_answer_42" module="App::Custom::Conditions"/>
-      </next>
-      <next name="update_smp">
-        <condition name="is_archive_current" module="App::Custom::Conditions"/>
-      </next>
-    </task>
+    <task name="load_scadamdl_clone"></task>
     
-    <task name="compare_db">
-      <next name="update_smp"/>
-    </task>
+    <task name="compare_db"></task>
     
     <task name="update_smp">
       <param name="SMP" value="TNFEABI" />
@@ -41,10 +29,64 @@
       <param name="COMMS" value="COMMLAR" />
     </task>
     
-    <task name="update_standby"></task>
+    <task name="update_standby">
+        <param name="STANDBY" value="HOSTA"/>
+    </task>
+    <task name="update_standby">
+        <param name="STANDBY" value="HOSTB"/>
+    </task>
+    <task name="update_standby">
+        <param name="STANDBY" value="HOSTC"/>
+    </task>
+    <task name="update_standby">
+        <param name="STANDBY" value="HOSTD"/>
+    </task>
+    
     <task name="failover"></task>
-    <task name="update_other_host"></task>
-    <task name="update_rds"></task>
-    <task name="rollback_host"></task>
-    <task name="rollback_smp"></task>
+    
+    <task name="update_other_host">
+        <param name="STANDBY" value="HOSTA"/>
+    </task>
+    <task name="update_other_host">
+        <param name="STANDBY" value="HOSTB"/>
+    </task>
+    <task name="update_other_host">
+        <param name="STANDBY" value="HOSTC"/>
+    </task>
+    <task name="update_other_host">
+        <param name="STANDBY" value="HOSTD"/>
+    </task>
+    
+    <task name="update_rds">
+        <param name="RDS1" value="WEBFG1"/>
+        <param name="RDS2" value="WEBFG2"/>
+    </task>
+    
+    <task name="rollback_host">
+        <param name="STANDBY" value="HOSTA"/>
+    </task>
+    
+    <task name="rollback_host">
+        <param name="STANDBY" value="HOSTB"/>
+    </task>
+    
+    <task name="rollback_host">
+        <param name="STANDBY" value="HOSTC"/>
+    </task>
+    
+    <task name="rollback_host">
+        <param name="STANDBY" value="HOSTD"/>
+    </task>
+    
+    <task name="rollback_smp">
+        <param name="SMP" value="TNFEABI" />
+    </task>
+    
+    <task name="rollback_smp">
+        <param name="SMP" value="TNFESAN" />
+    </task>
+    
+    <task name="rollback_smp">
+        <param name="SMP" value="TCFELAR" />
+    </task>
 </taskmaster>

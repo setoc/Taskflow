@@ -10,6 +10,7 @@ use Log::Log4perl qw(get_logger);
 use Data::Dumper;
 
 use App::Task;
+use App::Context;
 
 =head1 NAME
 
@@ -22,12 +23,17 @@ the tasks with the TaskMaster and log the results.
 The TaskMaster xml file describes available tasks and parameters. Each Task is
 defined in a task xml file where the commands and functions are specified as 
 steps.
-TASK
-  PARAMETERS
+TASKMASTER
+  PARAM *
+  TASK_REF *
+    PARAM *
 
-STEP
-  CMD|FUNC
-    PARAMETERS
+TASKS
+  TASK *
+    CONDITION *
+    CMD *
+      PARAM *
+    NEXT *
 
 =cut
 
@@ -42,8 +48,12 @@ sub new{
 sub _init{
 	my $self = shift;
 	my $options = shift;
-	$self->{tasks} = [];
+    $self->{task_refs} = [];
+	$self->{tasks} = {};
     $self->{params} = {};
+    # state variables
+    $self->{current_task} = undef; # name of current task used to find list of next tasks
+    $self->{context} = App::Context->new();
 
 	my $taskmaster_xml = $options->{'taskmaster_xml'};
     $self->_load_taskmaster_config($taskmaster_xml) if defined $taskmaster_xml;
@@ -59,10 +69,11 @@ sub _load_taskmaster_config{
 
 	#CREATE TASK OBJECTS FOR EACH TASK
 	foreach my $item (@{$config->{task}}){
-		push @{$self->{tasks}} , _create_task_ref($item);
+		push @{$self->{task_refs}} , _create_task_ref($item);
 	}
     foreach my $item(@{$config->{param}}){
-        $self->{params}{$item->{name}} = $item->{value};
+        $self->{params}{$item->{name}} = $item->{value}; # keep list of params for resetting the context
+        $self->{context}->item($item->{name} , $item->{value});
     }
     print Dumper($self->{params});
 }
@@ -70,33 +81,47 @@ sub _create_task_ref{
 	my $item = shift;
 	my $task = {};
 	$task->{name} = $item->{name};
-	foreach my $next_item(@{$item->{next}}){
-		my $next = {};
-		$next->{name} = $next_item->{name};
-		foreach my $condition_item(@{$next_item->{conditions}}){
-			$next->{conditions}{$condition_item->{name}} = $condition_item->{module};
-		}
-		push @{$task->{next_tasks}} , $next;
-	}
+    $task->{status} = 'none'; # none, in_progress, successful, failed
+	foreach my $param (@{$item->{param}}){
+        $task->{params}{$param->{name}} = $param->{value};
+    }
 	return $task;
 }
 
 sub _load_task_config{
 	my $self = shift;
 	my $xml = shift;
-	my $config = XMLin($xml, KeyAttr=>{},ForceArray=>['cmd','param','task']);
+	my $config = XMLin($xml, KeyAttr=>{},ForceArray=>['condition','cmd','next','param','task']);
 	#TODO: VALIDATE DATA
 
 	#CREATE TASK OBJECTS FOR EACH TASK
 	foreach my $item (@{$config->{task}}){
-		push @{$self->{tasks}} , App::Task->new(%{$item});
+        my $task = App::Task->new(%{$item});
+		$self->{tasks}{$task->name} = $task;
 	}
 }
 
-sub get_task_names{
-
+sub available_tasks{
+    my $self = shift;
+    my $result = [];
+    # result should show only tasks in the next queue
+    # and only those tasks whose conditions are met
+    if(defined $self->{current_task}){
+        
+    } else {
+        # list all task options
+        foreach my $tr (@{$self->{task_refs}}){
+            my $task = $self->{tasks}{$tr->{name}};
+            $self->{context}->merge_params($tr->{params});
+            next if (not $task->conditions_met($self->{context}));
+            my $item = {name=>$task->name,
+                        description=>$task->description($self->{context})
+                        };
+            push @{$result} , $item;
+        }
+    }
+    return $result;
 }
-
 
 
 

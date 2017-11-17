@@ -21,8 +21,8 @@ sub new{
 sub _init{
 	my $self = shift;
 	my $options = shift;
-	$self->{name} = 'undef';
-	$self->{module} = 'App::Condition::Null';
+	$self->{name} = $options->{name};
+	$self->{module} = $options->{module};
 }
 
 
