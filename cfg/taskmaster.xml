@@ -2,6 +2,7 @@
     <!-- GLOBAL PARAMETERS AVAILABLE TO ALL TASKS -->
     <!-- THE ENVIRONMENT VARIABLES OF THE EXECUTING MACHINE ARE AVAILABLE AS WELL -->
     <param name="OPCO" value="TCC" />
+    <param name="HABITAT_CASES" value="c:\temp"/>
     
     <!-- EACH TASK CAPTURES SITE SPECIFIC PARAMETERS FOR EXECUTION -->
     <!-- TASKS THAT DON'T MEET THEIR CONDITIONS (IN TASKS.XML) SHOULD NOT BE VISIBLE -->
@@ -89,4 +90,6 @@
     <task name="rollback_smp">
         <param name="SMP" value="TCFELAR" />
     </task>
+    
+    <task name="reset_tasks"></task>
 </taskmaster>

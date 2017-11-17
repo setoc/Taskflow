@@ -55,12 +55,16 @@ sub _init{
     $self->{current_task} = undef; # name of current task used to find list of next tasks
     $self->{context} = App::Context->new();
 
-	my $taskmaster_xml = $options->{'taskmaster_xml'};
+	my $taskmaster_xml = $options->{taskmaster_xml};
     $self->_load_taskmaster_config($taskmaster_xml) if defined $taskmaster_xml;
     
     my $tasks_xml = $options->{tasks_xml};
 	$self->_load_task_config($tasks_xml) if defined $tasks_xml;
+	
+	my $conditions_xml = $options->{conditions_xml};
+	$self->_load_condition_config($conditions_xml) if defined $conditions_xml;
 }
+
 sub _load_taskmaster_config{
 	my $self = shift;
 	my $xml = shift;
@@ -75,8 +79,8 @@ sub _load_taskmaster_config{
         $self->{params}{$item->{name}} = $item->{value}; # keep list of params for resetting the context
         $self->{context}->item($item->{name} , $item->{value});
     }
-    print Dumper($self->{params});
 }
+
 sub _create_task_ref{
 	my $item = shift;
 	my $task = {};
@@ -101,6 +105,20 @@ sub _load_task_config{
 	}
 }
 
+sub _load_condition_config{
+	my $self = shift;
+	my $xml = shift;
+	return undef if not defined $xml;
+	my $config = XMLin($xml, KeyAttr=>{},ForceArray=>['condition','param']);
+	#TODO: VALIDATE DATA
+
+	#CREATE CONDITION OBJECTS FOR EACH CONDITION
+	foreach my $item (@{$config->{condition}}){
+        my $cond = App::Condition->new(%{$item});
+		$self->{conditions}{$cond->name} = $cond;
+	}
+}
+
 sub available_tasks{
     my $self = shift;
     my $result = [];
@@ -113,9 +131,10 @@ sub available_tasks{
         foreach my $tr (@{$self->{task_refs}}){
             my $task = $self->{tasks}{$tr->{name}};
             $self->{context}->merge_params($tr->{params});
-            next if (not $task->conditions_met($self->{context}));
+            next if (not $task->conditions_met($self->{context}, $self->{conditions}));
             my $item = {name=>$task->name,
-                        description=>$task->description($self->{context})
+                        description=>$task->description($self->{context}),
+						status=>$tr->{status}
                         };
             push @{$result} , $item;
         }
@@ -123,7 +142,12 @@ sub available_tasks{
     return $result;
 }
 
-
+sub execute_task{
+	my $self = shift;
+	my $task_name = shift;
+	my $result = $self->{tasks}{$task_name}->execute($self->{context});
+	return $result;
+}
 
 
 1;

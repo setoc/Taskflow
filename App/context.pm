@@ -59,9 +59,12 @@ sub delete{
 	return ($oldkey,$oldval);
 }
 
+# TODO: merging params should be localized by pushing changes onto a stack popping changes off the stack
+
 sub merge_params{
 	my $self = shift;
 	my $params = shift; # {x=>y,i=>j,...}
+	
 	foreach my $key (CORE::keys %{$params}){
 		$self->{key_map}{lc $key} = $key;
 		$self->{items}{lc $key} = $params->{$key};

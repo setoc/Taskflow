@@ -28,7 +28,7 @@ sub _init{
     $self->{cmds} = []; # ordered list of steps to process
 	$self->{next_tasks} = []; # tasks that can logically follow this one
 	foreach my $condition_item(@{$options->{condition}}){
-		my $condition = App::Condition->new(%{$condition_item});
+		my $condition = $condition_item->{name};
 		push @{$self->{conditions}} , $condition;
 	}
 	foreach my $cmd_item (@{$options->{cmd}}){
@@ -64,10 +64,15 @@ sub description{
 
 sub conditions_met{
 	my $self = shift;
-	my $option = shift;
-	if(defined $option){
-		if($option->isa('App::Context')){
-			# TODO: test conditions in current context
+	my $context = shift;
+	my $conditions = shift; # hashref of conditions objects
+	if(defined $context){
+		if($context->isa('App::Context')){
+			$context->merge_params($self->{params});
+			foreach my $cond_name (@{$self->{conditions}}){
+				my $cond = $conditions->{$cond_name};
+				return 0 if(not $cond->test($context));
+			}
 			return 1;
 		}
 	}

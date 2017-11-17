@@ -14,26 +14,27 @@
   </task>
   
   <task name="load_scadamdl_clone" description="load the model archive into scadamdl">
-    <condition name="is_archive_current" module="App::Custom::Conditions"/>
+    <condition name="is_archive_current" />
     <cmd description="load archive into scadamdl clone" type="system" run="hdbcopydata -case scadamdl.ade.%OPCO%_scada -d scadamdl.ems" />
     <next name="compare_db"></next>
     <next name="update_smp"></next>
   </task>
   
   <task name="compare_db" description="compare the current scada db with the new scada db">
-    <condition name="is_archive_current" module="App::Custom::Conditions"/>
-    <condition name="is_the_answer_42" module="App::Custom::Conditions"/>
+    <condition name="is_the_answer_42" />
+    <condition name="is_archive_current" />
+    
     <next name="update_smp"/>
   </task>
   
   <task name="update_smp" description="update the %SMP% smp">
-    <condition name="is_archive_current" module="App::Custom::Conditions"/>
+    <condition name="is_archive_current" />
     <next name="update_smp"/>
     <next name="update_standby"></next>
   </task>
   
   <task name="update_standby" description="load the new databases on the standby host %STANDBY%">
-    <condition name="is_host_standby" module="App::Custom::Conditions"/>
+    <condition name="is_host_standby" />
     <next name="failover"></next>
     <next name="rollback_host"></next>
   </task>
@@ -52,7 +53,7 @@
   </task>
   
   <task name="rollback_host" description="roll back to the previous database on the scada host %STANDBY%">
-    <condition name="is_host_standby" module="App::Custom::Conditions"/>
+    <condition name="is_host_standby" />
     <next name="failover"></next>
     <next name="rollback_host"></next>
     <next name="rollback_smp"></next>
@@ -61,5 +62,9 @@
   <task name="rollback_smp" description="roll back to the previous database on the smp %SMP%">
     <next name="rollback_host"></next>
     <next name="rollback_smp"></next>
+  </task>
+  
+  <task name="reset_tasks" description="reset the taskmaster system">
+    
   </task>
 </tasks>

@@ -1,0 +1,9 @@
+<conditions>
+	<condition name="is_archive_current" module="App::Custom::Conditions">
+      <param name="old_archive_threshold" value="3600"/>
+    </condition>
+	
+	<condition name="is_the_answer_42" module="App::Custom::Conditions"/>
+	
+	<condition name="is_host_standby" module="App::Custom::Conditions"/>
+</conditions>

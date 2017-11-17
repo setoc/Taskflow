@@ -16,20 +16,18 @@ $log->info("Starting: ",scalar(localtime));
 
 process_options();
 
-my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',tasks_xml=>'cfg/tasks.xml');
+my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',
+							  tasks_xml=>'cfg/tasks.xml',
+							  conditions_xml=>'cfg/conditions.xml');
 #print Dumper($tm);
-my $available_tasks = $tm->available_tasks();
-print Dumper($available_tasks);
-
-exit(-1);
 
 while(1){
 	
 	my $tasks = $tm->available_tasks;
 	my $i = 0;
-	foreach my $task_name (@{$tasks}){
+	foreach my $item (@{$tasks}){
 		++$i;
-		say "$i) $task_name";
+		say "$i) $item->{name}";
 	}
 	say "q) quit";
 	my $full_response = get_response("option? ");
