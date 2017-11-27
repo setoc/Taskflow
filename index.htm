@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8"/>
+        <title></title>
+    </head>
+    <body>
+        <div id="header"></div>
+        <div id="nav"></div>
+        <div id="main">
+            <div id="tasks">loading...</div>
+        </div>
+        <div id="footer"></div>
+    </body>
+    <script>
+        window.onload = init;
+        function init(){
+            //load tasks from server
+            loadDoc('index.cgi',processResponse);
+            
+        }
+        function loadDoc(url, cb) {
+          var xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 1){
+                console.log("connected to server");
+            }else if(this.readyState == 2){
+                console.log("server received request");
+            }else if(this.readyState == 3){
+                console.log("server processing request");
+            }else if (this.readyState == 4 && this.status == 200) {
+                console.log("server responded");
+                cb(this);
+            }else{
+                console.log("weirdness happened: " + this.readyState + " " + this.status);
+            }
+          };
+          xhttp.open("POST", url, true);
+          xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+          xhttp.send("fname=Henry&lname=Ford");
+        }
+        
+        function processResponse(xhttp){
+            var obj = JSON.parse(xhttp.responseText);
+            renderTaskflow(obj);
+        }
+        
+        function renderTaskflow(taskflow){
+            var out = '';
+            for(var x of taskflow){
+                out+=renderTask(x);
+            }
+            document.getElementById("tasks").innerHTML = out;
+        }
+        function renderTask(task){
+            return '<div id="' + task.name + '">'
+                + '<span class="' + task.status + '"></span>'
+                + '<a href="?execute=' + task.id + '" class="task">'
+                + task.description
+                + '</a>'
+                + '</div>';
+        }
+        /*
+        window.onclick = function(event) {
+            if (event.target.nodeName != 'A') return;
+          
+            let href = event.target.getAttribute('href');
+            alert( href ); // ...can be loading from the server, UI generation etc
+          
+            return false; // prevent browser action (don't go to the URL)
+      };
+      */
+    </script>
+</html>

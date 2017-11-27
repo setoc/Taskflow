@@ -79,4 +79,25 @@ sub conditions_met{
 	return 0;
 }
 
+sub execute{
+	my $self = shift;
+	my $context = shift;
+	if(defined $context){
+		if($context->isa('App::Context')){
+			$context->merge_params($self->{params});
+		}
+	}
+	foreach my $cmd (@{$self->{cmds}}){
+		$cmd->execute($context);
+	}
+}
+
+use overload 
+    '""' => \&stringify;
+
+sub stringify {
+    my ($self) = shift;
+    return ''. __PACKAGE__ . ' - ' . $self->{name} .' - Cmds:' . @{$self->{cmds}} . ' - Next:' . $self->{next_tasks};
+}
+
 1;

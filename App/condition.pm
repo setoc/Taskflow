@@ -54,5 +54,12 @@ sub test{
 	return 0;
 }
 
+use overload 
+    '""' => \&stringify;
+
+sub stringify {
+    my ($self) = shift;
+    return ''. __PACKAGE__ . ' - '. $self->{name} . ' - Module:' . @{$self->{module}} . ' - Params:' . %{$self->{params}};
+}
 
 1;

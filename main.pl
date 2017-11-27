@@ -21,6 +21,8 @@ my $tm = App::TaskMaster->new(taskmaster_xml=>'cfg/taskmaster.xml',
 							  conditions_xml=>'cfg/conditions.xml');
 #print Dumper($tm);
 
+say "$tm";
+
 while(1){
 	
 	my $tasks = $tm->available_tasks;
@@ -35,11 +37,11 @@ while(1){
 	exit 0 if ($full_response eq 'q');
 	next if ($full_response <1 || $full_response>$i);
 	my $task_name = $tasks->[$full_response-1];
-	say "\nselected $task_name\n" ;
+	say "\nselected " . uc($task_name->{name}) . " - $task_name->{description}\n" ;
 	if($tm->execute_task($task_name)){
-		say "$task_name executed successfully";
+		say "$task_name->{name} executed successfully";
 	}else{
-		say "$task_name failed to execute";
+		say "$task_name->{name} failed to execute";
 	}
 }
 

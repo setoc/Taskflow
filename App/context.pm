@@ -25,6 +25,7 @@ sub _init{
 	# the keys should be case-insensitive, which means lowercase all keys and keep a mapping between original and lowercase
 	$self->{key_map} = {};
 	$self->{items} = {};
+	$self->clear_error(); # error information set by callees for callers inspection
 }
 
 sub keys{
@@ -80,6 +81,29 @@ sub expand{
 					exists $self->{items}{lc $1} ? $self->{items}{lc $1} : '???'
 					/eg;
 	return $text;
+}
+
+sub set_error{
+	my $self = shift;
+	my $err_description = shift;
+	$self->{error}{description} = $err_description if defined $err_description;
+}
+sub get_error{
+	my $self = shift;
+	return $self->{error}{description};
+}
+sub clear_error{
+	my $self = shift;
+	$self->{error} = {};
+	$self->{error}{description} = "";
+}
+
+use overload 
+    '""' => \&stringify;
+
+sub stringify {
+    my ($self) = shift;
+    return ''. __PACKAGE__ . ' - Params:' . %{$self->{items}};
 }
 
 1;

@@ -144,10 +144,18 @@ sub available_tasks{
 
 sub execute_task{
 	my $self = shift;
-	my $task_name = shift;
-	my $result = $self->{tasks}{$task_name}->execute($self->{context});
+	my $task_ref = shift;
+    my $task = $self->{tasks}{$task_ref->{name}};
+	my $result = $task->execute($self->{context});
 	return $result;
 }
 
+use overload 
+    '""' => \&stringify;
+
+sub stringify {
+    my ($self) = shift;
+    return ''. __PACKAGE__ . ' - Tasks:' . @{$self->{task_refs}} . ' - Current:' . ($self->{current_task} || 'undef');
+}
 
 1;
